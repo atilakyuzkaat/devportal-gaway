@@ -10,12 +10,23 @@
     --primary-color: #00ff88;
     /* Neon Green */
     --primary-gradient: linear-gradient(135deg, #00ff88, #00cc6a);
+    --primary-hover: #00cc6a;
+
+    --error-color: #ff4d4d;
+    --success-color: #00ff88;
 
     --border-color: rgba(255, 255, 255, 0.1);
+
+    --font-main: 'Inter', sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+
+    --container-width: 1200px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --glass-bg: rgba(20, 20, 20, 0.7);
     --glass-border: 1px solid rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --blur: blur(12px);
 }
 
 /* Light Theme Overrides */
@@ -29,6 +40,7 @@ body.light-mode {
     --primary-color: #007bff;
     /* More standard blue for light mode */
     --primary-gradient: linear-gradient(135deg, #007bff, #0056b3);
+    --primary-hover: #0056b3;
 
     --border-color: rgba(0, 0, 0, 0.1);
 
@@ -111,7 +123,6 @@ body::before {
 
 body.light-mode .btn-primary {
     color: #fff;
-    /* White text on blue button */
 }
 
 .btn-primary:hover {
@@ -163,12 +174,69 @@ body.light-mode .btn-primary {
     transition: background-color 0.3s ease;
 }
 
-/* ... existing logic for logo/actions ... */
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-/* Auth & View Logic */
-/* ... same as before but using variables ... */
+.logo {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+}
 
-/* Auth Box */
+.dot {
+    color: var(--primary-color);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Views Logic */
+.view-section {
+    min-height: 100vh;
+    padding-top: 80px;
+    padding-bottom: 50px;
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.view-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Auth Section */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+}
+
 .auth-box {
     width: 100%;
     max-width: 400px;
@@ -180,19 +248,70 @@ body.light-mode .btn-primary {
     box-shadow: var(--glass-shadow);
 }
 
+.auth-tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 15px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
 .auth-tab.active {
     color: var(--primary-color);
 }
 
 .auth-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
     background: var(--primary-color);
     box-shadow: 0 0 10px var(--primary-color);
 }
 
+.auth-form {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
 .form-group input,
 .form-group textarea {
+    width: 100%;
+    padding: 12px;
     background: rgba(0, 0, 0, 0.2);
     /* Dark default */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    transition: var(--transition);
 }
 
 body.light-mode .form-group input,
@@ -201,11 +320,61 @@ body.light-mode .form-group textarea {
     /* Light default */
 }
 
-/* Upload Modal Improved */
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.error-message {
+    margin-top: 15px;
+    color: var(--error-color);
+    font-size: 0.9rem;
+    text-align: center;
+    min-height: 20px;
+}
+
+/* Dashboard Section */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-header .hero-title {
+    margin: 0;
+    font-size: 2.5rem;
+    text-align: left;
+}
+
+/* Upload Modal */
+.upload-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
 .upload-box {
+    width: 100%;
+    max-width: 500px;
     background: var(--bg-color);
-    /* Solid background instead of transparent */
+    /* Solid background */
     border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 30px;
+    position: relative;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
@@ -214,10 +383,41 @@ body.light-mode .upload-box {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
 }
 
+.upload-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.upload-header h3 {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.close-btn:hover {
+    color: var(--error-color);
+}
+
 .file-upload-wrapper {
+    position: relative;
     height: 160px;
     /* Taller */
     border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition);
     background: rgba(125, 125, 125, 0.05);
 }
 
@@ -230,19 +430,75 @@ body.light-mode .file-upload-wrapper:hover {
     background: rgba(0, 123, 255, 0.05);
 }
 
+.file-upload-wrapper input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.file-upload-placeholder i {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
 /* Progress Bar */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
 .progress-bar {
+    height: 100%;
     background: var(--primary-color);
+    width: 0%;
+    transition: width 0.3s ease;
     box-shadow: 0 0 10px var(--primary-color);
 }
 
-/* Table Enhancements */
+/* Games Table */
+.table-responsive {
+    overflow-x: auto;
+}
+
 .games-table {
+    width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    background: var(--surface-color);
+    border-radius: 12px;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+}
+
+.games-table th,
+.games-table td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .games-table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
     user-select: none;
     transition: background 0.2s;
@@ -258,8 +514,23 @@ body.light-mode .file-upload-wrapper:hover {
     opacity: 0.5;
 }
 
+.games-table td {
+    color: var(--text-primary);
+}
+
+.games-table tr:last-child td {
+    border-bottom: none;
+}
+
 .games-table tr:hover {
     background: var(--surface-hover);
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 
 .status-badge.active {
@@ -282,10 +553,10 @@ body.light-mode .status-badge.active {
     height: 32px;
     border-radius: 6px;
     cursor: pointer;
-    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: var(--transition);
 }
 
 .action-btn:hover {
@@ -293,23 +564,41 @@ body.light-mode .status-badge.active {
     color: #000;
 }
 
-.loading-spinner {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-    font-size: 1.2rem;
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-header {
         flex-direction: column;
-        align-items: flex-start;
         gap: 20px;
+        text-align: center;
+    }
+
+    .nav-container {
+        padding: 0 15px;
     }
 
     .games-table th:nth-child(2),
-    .games-table td:nth-child(2) {
+    .games-table td:nth-child(2),
+    .games-table th:nth-child(3),
+    .games-table td:nth-child(3) {
         display: none;
+        /* Hide size/date on mobile */
     }
 }
