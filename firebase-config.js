@@ -2,12 +2,13 @@
 // IMPORTANT: Replace these with your actual Firebase project credentials
 // You can get these from the Firebase Console -> Project Settings
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "your-project-id.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project-id.firebasestorage.app",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef123456"
+    apiKey: "AIzaSyCSk-kkgRLYqWcMSf19djXaG43KC0rXdsM",
+    authDomain: "games-away-nanhome.firebaseapp.com",
+    projectId: "games-away-nanhome",
+    storageBucket: "games-away-nanhome.firebasestorage.app",
+    messagingSenderId: "19009835648",
+    appId: "1:19009835648:web:f8adc8c86b654d36b7cc65",
+    measurementId: "G-MXVCMGM4JL"
 };
 
 // Initialize Firebase
