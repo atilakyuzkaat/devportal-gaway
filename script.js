@@ -1,9 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- UI Elements ---
+    const body = document.body;
+    const themeToggle = document.getElementById('theme-toggle');
     const authView = document.getElementById('auth-view');
     const dashboardView = document.getElementById('dashboard-view');
     const userEmailSpan = document.getElementById('user-email');
     const logoutBtn = document.getElementById('logout-btn');
+
+    // --- Theme Logic ---
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        body.classList.add('light-mode');
+        updateThemeIcon(true);
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeIcon(isLight);
+        });
+    }
+
+    function updateThemeIcon(isLight) {
+        if (!themeToggle) return;
+        themeToggle.innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    }
 
     // Auth Forms
     const loginForm = document.getElementById('login-form');
@@ -13,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- State Management ---
     let currentUser = null;
+    let gamesData = []; // Store fetched games for sorting
 
     // --- Authentication Logic ---
 
