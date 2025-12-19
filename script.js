@@ -233,9 +233,26 @@ document.addEventListener('DOMContentLoaded', () => {
         filePlaceholder.textContent = 'Drag & drop or click to browse';
     }
 
-    // --- Game Listing Logic ---
+    // --- Game Listing Logic & Sorting ---
     const gamesTableBody = document.getElementById('games-table-body');
     const loadingGames = document.getElementById('loading-games');
+    const sortHeaders = document.querySelectorAll('th.sortable');
+    let currentSort = { field: 'date', dir: 'desc' };
+
+    // Sort Event Listeners
+    sortHeaders.forEach(th => {
+        th.addEventListener('click', () => {
+            const field = th.dataset.sort;
+            if (currentSort.field === field) {
+                currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.dir = 'asc'; // Default new sort to asc
+            }
+            renderGames();
+            updateSortIcons();
+        });
+    });
 
     function loadGames() {
         if (!currentUser) return;
@@ -245,48 +262,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
         db.collection('games')
             .where('userId', '==', currentUser.uid)
-            .orderBy('uploadedAt', 'desc')
             .get()
             .then((querySnapshot) => {
                 loadingGames.style.display = 'none';
+                gamesData = []; // Reset local data
 
                 if (querySnapshot.empty) {
-                    gamesTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--text-secondary);">No games uploaded yet.</td></tr>';
+                    renderGames(); // Will render empty state
                     return;
                 }
 
                 querySnapshot.forEach((doc) => {
-                    const game = doc.data();
-                    const date = game.uploadedAt ? game.uploadedAt.toDate().toLocaleDateString() : 'Just now';
-
-                    const row = `
-                        <tr>
-                            <td>
-                                <div style="font-weight: 600;">${game.title}</div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">${game.description}</div>
-                            </td>
-                            <td>${game.size}</td>
-                            <td>${date}</td>
-                            <td><span class="status-badge active">Active</span></td>
-                            <td>
-                                <div style="display: flex; gap: 10px;">
-                                    <button class="action-btn" title="Download" onclick="window.open('${game.downloadUrl}')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                     <button class="action-btn" title="Delete" style="color: var(--error-color);" onclick="deleteGame('${doc.id}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    gamesTableBody.insertAdjacentHTML('beforeend', row);
+                    const data = doc.data();
+                    gamesData.push({
+                        id: doc.id,
+                        ...data,
+                        // Parse extra fields for sorting if needed
+                        uploadTimestamp: data.uploadedAt ? data.uploadedAt.toMillis() : 0,
+                        sizeBytes: parseSizeBytes(data.size)
+                    });
                 });
+
+                // Initial sort
+                renderGames();
             })
             .catch((error) => {
-                console.log("Error getting games: ", error);
+                console.error("Error getting games: ", error);
                 loadingGames.style.display = 'none';
             });
+    }
+
+    // Helper for parsing size string back to bytes for sorting (rough approximation)
+    function parseSizeBytes(sizeStr) {
+        if (!sizeStr) return 0;
+        const parts = sizeStr.split(' ');
+        const num = parseFloat(parts[0]);
+        const unit = parts[1];
+        let multiplier = 1;
+        if (unit === 'KB') multiplier = 1024;
+        if (unit === 'MB') multiplier = 1024 * 1024;
+        if (unit === 'GB') multiplier = 1024 * 1024 * 1024;
+        return num * multiplier;
+    }
+
+    function renderGames() {
+        gamesTableBody.innerHTML = '';
+
+        if (gamesData.length === 0) {
+            gamesTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--text-secondary);">No games uploaded yet.</td></tr>';
+            return;
+        }
+
+        // Sort Data
+        gamesData.sort((a, b) => {
+            let valA, valB;
+
+            if (currentSort.field === 'title') {
+                valA = a.title.toLowerCase();
+                valB = b.title.toLowerCase();
+            } else if (currentSort.field === 'size') {
+                valA = a.sizeBytes;
+                valB = b.sizeBytes;
+            } else { // date
+                valA = a.uploadTimestamp;
+                valB = b.uploadTimestamp;
+            }
+
+            if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Render Rows
+        gamesData.forEach(game => {
+            const date = game.uploadedAt ? new Date(game.uploadedAt.toDate()).toLocaleDateString() : 'Just now';
+
+            const row = `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">${game.title}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${game.description}</div>
+                    </td>
+                    <td>${game.size}</td>
+                    <td>${date}</td>
+                    <td><span class="status-badge active">Active</span></td>
+                    <td>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="action-btn" title="Download" onclick="window.open('${game.downloadUrl}')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                                <button class="action-btn" title="Delete" style="color: var(--error-color);" onclick="deleteGame('${game.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            gamesTableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    function updateSortIcons() {
+        sortHeaders.forEach(th => {
+            const icon = th.querySelector('i');
+            icon.className = 'fas fa-sort'; // Reset
+            if (th.dataset.sort === currentSort.field) {
+                icon.className = currentSort.dir === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                icon.style.opacity = '1';
+                icon.style.color = 'var(--primary-color)';
+            } else {
+                icon.style.opacity = '0.5';
+                icon.style.color = '';
+            }
+        });
     }
 
     // Helper: Format Bytes
