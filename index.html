@@ -28,6 +28,9 @@
         <div class="container nav-container">
             <a href="#" class="logo">GameVault<span class="dot">.</span></a>
             <div class="nav-actions">
+                <button id="theme-toggle" class="btn btn-icon" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
                 <span id="user-email" class="user-email" style="display: none;"></span>
                 <button id="logout-btn" class="btn btn-outline" style="display: none;">Logout</button>
             </div>
@@ -123,9 +126,9 @@
                     <table class="games-table">
                         <thead>
                             <tr>
-                                <th>Game Title</th>
-                                <th>Size</th>
-                                <th>Uploaded Date</th>
+                                <th class="sortable" data-sort="title">Game Title <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="size">Size <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="date">Uploaded Date <i class="fas fa-sort"></i></th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
