@@ -1,59 +1,290 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Portfolyo sitesi yüklendi.');
+    // --- UI Elements ---
+    const authView = document.getElementById('auth-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    const userEmailSpan = document.getElementById('user-email');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    // Mobile Menu Toggle
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
+    // Auth Forms
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const authTabs = document.querySelectorAll('.auth-tab');
+    const authError = document.getElementById('auth-error');
 
-    if (hamburger) {
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            hamburger.classList.toggle('toggle');
-        });
-    }
+    // --- State Management ---
+    let currentUser = null;
 
-    // Smooth Scroll for Anchor Links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
+    // --- Authentication Logic ---
 
-            // Close mobile menu if open
-            if (navLinks.classList.contains('active')) {
-                navLinks.classList.remove('active');
-                hamburger.classList.remove('toggle');
-            }
-
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-
-    // Navbar Scroll Effect
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+    // Listen for Auth State Changes
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            userEmailSpan.textContent = user.email;
+            userEmailSpan.style.display = 'inline';
+            logoutBtn.style.display = 'inline';
+            switchView('dashboard');
+            loadGames(); // Fetch games when user logs in
         } else {
-            navbar.style.boxShadow = 'none';
+            currentUser = null;
+            userEmailSpan.style.display = 'none';
+            logoutBtn.style.display = 'none';
+            switchView('auth');
         }
     });
 
-    // Scroll Reveal Animation
-    const revealElements = document.querySelectorAll('.section-title, .about-text, .timeline-item, .project-card');
+    // Login
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
 
-    // Add reveal class initially
-    revealElements.forEach(el => el.classList.add('reveal'));
-
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-            }
-        });
-    }, {
-        threshold: 0.15
+        auth.signInWithEmailAndPassword(email, password)
+            .catch(error => {
+                showAuthError(error.message);
+            });
     });
 
-    revealElements.forEach(el => revealObserver.observe(el));
+    // Register
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .catch(error => {
+                showAuthError(error.message);
+            });
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+        auth.signOut();
+    });
+
+    // Auth Tab Switching
+    authTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Update Tab UI
+            authTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Show correct form
+            const target = tab.dataset.tab;
+            if (target === 'login') {
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+            } else {
+                loginForm.classList.remove('active');
+                registerForm.classList.add('active');
+            }
+            // Clear errors
+            authError.textContent = '';
+        });
+    });
+
+    function showAuthError(msg) {
+        authError.textContent = msg;
+    }
+
+    function switchView(viewName) {
+        if (viewName === 'auth') {
+            authView.classList.add('active');
+            dashboardView.remove('active');
+            // Force display styles for fade animation
+            dashboardView.style.display = 'none';
+            authView.style.display = 'block';
+        } else if (viewName === 'dashboard') {
+            authView.classList.remove('active');
+            dashboardView.classList.add('active');
+            authView.style.display = 'none';
+            dashboardView.style.display = 'block';
+        }
+    }
+
+
+    // --- Dashboard Logic: Upload & Listing ---
+
+    const uploadSection = document.getElementById('upload-section');
+    const newUploadBtn = document.getElementById('new-upload-btn');
+    const closeUploadBtn = document.getElementById('close-upload');
+    const uploadForm = document.getElementById('upload-form');
+    const progressBarContainer = document.querySelector('.progress-bar-container');
+    const progressBar = document.getElementById('upload-progress');
+
+    // Modal Controls
+    newUploadBtn.addEventListener('click', () => {
+        uploadSection.style.display = 'flex';
+    });
+
+    closeUploadBtn.addEventListener('click', () => {
+        uploadSection.style.display = 'none';
+        resetUploadForm();
+    });
+
+    // Close modal on outside click
+    uploadSection.addEventListener('click', (e) => {
+        if (e.target === uploadSection) {
+            uploadSection.style.display = 'none';
+            resetUploadForm();
+        }
+    });
+
+    // File Input UI Sync
+    const fileInput = document.getElementById('game-file');
+    const filePlaceholder = document.querySelector('.file-upload-placeholder span');
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            filePlaceholder.textContent = e.target.files[0].name;
+        } else {
+            filePlaceholder.textContent = 'Drag & drop or click to browse';
+        }
+    });
+
+    // Upload Logic
+    uploadForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (!currentUser) return;
+
+        const title = document.getElementById('game-title').value;
+        const description = document.getElementById('game-desc').value;
+        const file = fileInput.files[0];
+
+        if (!file) return;
+
+        // Show Progress
+        progressBarContainer.style.display = 'block';
+
+        // 1. Upload File to Storage
+        const fileRef = storage.ref(`games/${currentUser.uid}/${Date.now()}_${file.name}`);
+        const uploadTask = fileRef.put(file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressBar.style.width = progress + '%';
+            },
+            (error) => {
+                console.error("Upload error:", error);
+                alert("Upload failed: " + error.message);
+                progressBarContainer.style.display = 'none';
+            },
+            () => {
+                // Upload Complete
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    saveGameMetadata(title, description, downloadURL, file.size);
+                });
+            }
+        );
+    });
+
+    function saveGameMetadata(title, description, downloadURL, sizeBytes) {
+        db.collection('games').add({
+            userId: currentUser.uid,
+            title: title,
+            description: description,
+            downloadUrl: downloadURL,
+            size: formatBytes(sizeBytes),
+            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            status: 'Active' // Default status
+        })
+            .then(() => {
+                alert('Game published successfully!');
+                uploadSection.style.display = 'none';
+                resetUploadForm();
+                loadGames(); // Refresh list
+            })
+            .catch((error) => {
+                console.error("Error writing document: ", error);
+                alert("Error saving game data: " + error.message);
+            });
+    }
+
+    function resetUploadForm() {
+        uploadForm.reset();
+        progressBar.style.width = '0%';
+        progressBarContainer.style.display = 'none';
+        filePlaceholder.textContent = 'Drag & drop or click to browse';
+    }
+
+    // --- Game Listing Logic ---
+    const gamesTableBody = document.getElementById('games-table-body');
+    const loadingGames = document.getElementById('loading-games');
+
+    function loadGames() {
+        if (!currentUser) return;
+
+        gamesTableBody.innerHTML = '';
+        loadingGames.style.display = 'block';
+
+        db.collection('games')
+            .where('userId', '==', currentUser.uid)
+            .orderBy('uploadedAt', 'desc')
+            .get()
+            .then((querySnapshot) => {
+                loadingGames.style.display = 'none';
+
+                if (querySnapshot.empty) {
+                    gamesTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--text-secondary);">No games uploaded yet.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const game = doc.data();
+                    const date = game.uploadedAt ? game.uploadedAt.toDate().toLocaleDateString() : 'Just now';
+
+                    const row = `
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600;">${game.title}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">${game.description}</div>
+                            </td>
+                            <td>${game.size}</td>
+                            <td>${date}</td>
+                            <td><span class="status-badge active">Active</span></td>
+                            <td>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="action-btn" title="Download" onclick="window.open('${game.downloadUrl}')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                     <button class="action-btn" title="Delete" style="color: var(--error-color);" onclick="deleteGame('${doc.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    gamesTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            })
+            .catch((error) => {
+                console.log("Error getting games: ", error);
+                loadingGames.style.display = 'none';
+            });
+    }
+
+    // Helper: Format Bytes
+    function formatBytes(bytes, decimals = 2) {
+        if (!+bytes) return '0 Bytes';
+
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    }
+
+    // Expose delete function to window so onclick works
+    window.deleteGame = function (docId) {
+        if (confirm('Are you sure you want to delete this game?')) {
+            db.collection('games').doc(docId).delete().then(() => {
+                loadGames();
+            }).catch((error) => {
+                console.error("Error removing document: ", error);
+            });
+        }
+    };
 });
