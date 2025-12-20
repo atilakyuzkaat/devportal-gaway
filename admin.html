@@ -95,32 +95,60 @@
         <div class="container">
             <div class="dashboard-header">
                 <div>
-                    <h2 class="hero-title">Review Queue</h2>
-                    <p style="color: var(--text-secondary);">Manage game submissions pending approval.</p>
+                    <h2 class="hero-title">Admin Console</h2>
+                    <p style="color: var(--text-secondary);">Welcome, Administrator.</p>
                 </div>
                 <div class="admin-header-actions">
                     <button id="refresh-btn" class="btn btn-outline"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button id="btn-view-games" class="btn btn-primary">Games</button>
+                    <button id="btn-view-users" class="btn btn-outline">Developers</button>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="games-table">
-                    <thead>
-                        <tr>
-                            <th>Game Title</th>
-                            <th>Developer ID</th>
-                            <th>Submitted Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-table-body">
-                        <!-- Admin Rows -->
-                    </tbody>
-                </table>
+            <!-- Games View -->
+            <div id="view-games">
+                <h3 class="section-title" style="text-align: left; font-size: 1.5rem;">All Uploads</h3>
+                <div class="table-responsive">
+                    <table class="games-table">
+                        <thead>
+                            <tr>
+                                <th>Game Title</th>
+                                <th>Developer</th>
+                                <th>Submitted Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body">
+                            <!-- Game Rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <p id="loading-text" style="text-align: center; margin-top: 20px; color: var(--text-secondary);">
+                    Loading...</p>
             </div>
-            <p id="loading-text" style="text-align: center; margin-top: 20px; color: var(--text-secondary);">Loading
-                submissions...</p>
+
+            <!-- Users View -->
+            <div id="view-users" style="display: none;">
+                <h3 class="section-title" style="text-align: left; font-size: 1.5rem;">Registered Developers</h3>
+                <div class="table-responsive">
+                    <table class="games-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- User Rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <p id="loading-users" style="text-align: center; margin-top: 20px; color: var(--text-secondary);">
+                    Loading users...</p>
+            </div>
         </div>
     </section>
 

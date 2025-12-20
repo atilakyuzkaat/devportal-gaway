@@ -76,6 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('register-password').value;
 
         auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Save user to Firestore
+                return db.collection('users').doc(userCredential.user.uid).set({
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    role: 'developer'
+                });
+            })
+            .then(() => {
+                // Auth listener handles redirect
+            })
             .catch(error => {
                 showAuthError(error.message);
             });
