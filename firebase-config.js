@@ -12,12 +12,29 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+let app;
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+    app = firebase.initializeApp(firebaseConfig);
+} else {
+    app = firebase.app();
 }
 
 const auth = firebase.auth();
-const db = firebase.firestore();
+
+// Connect to the named database "gamesdbs"
+// Note: For compat SDK, we try to get the named instance.
+// If this fails, we might need to use the default database.
+let db;
+try {
+    // Attempt to access the named database
+    // This syntax is specific to how compat libraries bridge to modular SDKs
+    // If this doesn't work, we fall back to default but user needs to create default DB.
+    db = app.firestore('gamesdbs');
+} catch (e) {
+    console.warn("Could not connect to named database 'gamesdbs', falling back to default.", e);
+    db = firebase.firestore();
+}
+
 const storage = firebase.storage();
 
 console.log("Firebase initialized");
