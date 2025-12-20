@@ -22,14 +22,11 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 
 // Connect to the named database "gamesdbs"
-// Note: For compat SDK, we try to get the named instance.
-// If this fails, we might need to use the default database.
 let db;
 try {
-    // Attempt to access the named database
-    // This syntax is specific to how compat libraries bridge to modular SDKs
-    // If this doesn't work, we fall back to default but user needs to create default DB.
-    db = app.firestore('gamesdbs');
+    // verified syntax for compat mode named database
+    db = firebase.firestore(app, 'gamesdbs');
+    console.log("Connected to named database: gamesdbs");
 } catch (e) {
     console.warn("Could not connect to named database 'gamesdbs', falling back to default.", e);
     db = firebase.firestore();
