@@ -12,27 +12,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app;
 if (!firebase.apps.length) {
-    app = firebase.initializeApp(firebaseConfig);
-} else {
-    app = firebase.app();
+    firebase.initializeApp(firebaseConfig);
 }
 
 const auth = firebase.auth();
+const db = firebase.firestore(); // Connects to (default) database automatically
 const storage = firebase.storage();
 
-// Connect to the named database "gamesdbs"
-let db;
-try {
-    // Explicitly connect to the named database
-    db = firebase.firestore(app, 'gamesdbs');
-    console.log("SUCCESS: Initialized Firestore with named database: gamesdbs");
-} catch (e) {
-    console.error("CRITICAL ERROR: Failed to initialize named database 'gamesdbs'.", e);
-    // Do NOT fall back to default, as it doesn't exist.
-    // Let the app crash or show the real error.
-    alert("Database Connection Error: " + e.message);
-}
-
-console.log("Firebase initialized");
+console.log("Firebase initialized (Standard Mode)");
