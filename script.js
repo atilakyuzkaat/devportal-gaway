@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadUrl: downloadURL,
             size: formatBytes(sizeBytes),
             uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            status: 'Active' // Default status
+            status: 'pending' // Default status
         })
             .then(() => {
                 alert('Game published successfully!');
